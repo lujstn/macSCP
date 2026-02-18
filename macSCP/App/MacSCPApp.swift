@@ -7,19 +7,24 @@
 
 import SwiftUI
 import SwiftData
+#if os(macOS)
 import Sparkle
+#endif
 
 @main
 struct MacSCPApp: App {
     @StateObject private var container = DependencyContainer.shared
 
+    #if os(macOS)
     private let updaterController: SPUStandardUpdaterController
     @StateObject private var checkForUpdatesViewModel: CheckForUpdatesViewModel
+    #endif
 
     init() {
         AnalyticsService.initialize()
         AppLockManager.shared.lockIfNeeded()
 
+        #if os(macOS)
         let controller = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: nil,
@@ -29,6 +34,7 @@ struct MacSCPApp: App {
         self._checkForUpdatesViewModel = StateObject(
             wrappedValue: CheckForUpdatesViewModel(updater: controller.updater)
         )
+        #endif
     }
 
     var body: some Scene {
@@ -38,10 +44,12 @@ struct MacSCPApp: App {
                 .appLockOverlay()
         }
         .modelContainer(container.modelContainer)
+        #if os(macOS)
         .defaultSize(WindowSize.main)
         .commands {
             appCommands
         }
+        #endif
 
         // File Browser Window
         WindowGroup(id: WindowID.fileBrowser, for: String.self) { $windowId in
@@ -51,7 +59,9 @@ struct MacSCPApp: App {
             }
         }
         .modelContainer(container.modelContainer)
+        #if os(macOS)
         .defaultSize(WindowSize.fileBrowser)
+        #endif
 
         // File Editor Window
         WindowGroup(id: WindowID.fileEditor, for: String.self) { $windowId in
@@ -61,7 +71,9 @@ struct MacSCPApp: App {
             }
         }
         .modelContainer(container.modelContainer)
+        #if os(macOS)
         .defaultSize(WindowSize.fileEditor)
+        #endif
 
         // File Info Window
         WindowGroup(id: WindowID.fileInfo, for: String.self) { $windowId in
@@ -71,8 +83,10 @@ struct MacSCPApp: App {
             }
         }
         .modelContainer(container.modelContainer)
+        #if os(macOS)
         .defaultSize(WindowSize.fileInfo)
         .windowResizability(.contentSize)
+        #endif
 
         // Terminal Window
         WindowGroup(id: WindowID.terminal, for: String.self) { $windowId in
@@ -82,16 +96,21 @@ struct MacSCPApp: App {
             }
         }
         .modelContainer(container.modelContainer)
+        #if os(macOS)
         .defaultSize(WindowSize.terminal)
+        #endif
 
-        // Settings Window (Cmd+,)
+        // Settings Window (Cmd+, on macOS)
+        #if os(macOS)
         Settings {
             SettingsView()
                 .appLockOverlay()
         }
+        #endif
     }
 
-    // MARK: - Commands
+    // MARK: - Commands (macOS only)
+    #if os(macOS)
     @CommandsBuilder
     private var appCommands: some Commands {
         CommandGroup(after: .appInfo) {
@@ -117,4 +136,5 @@ struct MacSCPApp: App {
             .keyboardShortcut("r", modifiers: .command)
         }
     }
+    #endif
 }
