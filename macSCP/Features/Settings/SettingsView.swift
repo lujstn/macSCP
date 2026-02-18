@@ -24,8 +24,10 @@ struct SettingsView: View {
             securitySection
         }
         .formStyle(.grouped)
+        #if os(macOS)
         .frame(width: 450)
         .fixedSize(horizontal: false, vertical: true)
+        #endif
     }
 
     // MARK: - Security Section
@@ -45,23 +47,39 @@ struct SettingsView: View {
                     }
                 }
             )) {
+                #if os(macOS)
                 Label("Require Touch ID", systemImage: "touchid")
+                #else
+                Label("Require Biometric Auth", systemImage: "faceid")
+                #endif
             }
             .disabled(!isBiometricAvailable)
 
             if !isBiometricAvailable {
+                #if os(macOS)
                 Text("Touch ID is not available on this Mac. Use a Mac with Touch ID or an Apple Watch to enable this feature.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                #else
+                Text("Biometric authentication is not available on this device.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                #endif
             }
 
             if isEnabled {
                 Toggle(isOn: Bindable(appLockManager).lockOnAppResume) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Lock when switching apps")
+                        #if os(macOS)
                         Text("Require authentication when returning to macSCP")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                        #else
+                        Text("Require authentication when returning to the app")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        #endif
                     }
                 }
 

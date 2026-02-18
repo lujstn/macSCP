@@ -23,7 +23,9 @@ struct ConnectionListView: View {
             ConnectionGridView(viewModel: viewModel)
         }
         .navigationTitle("")
+        #if os(macOS)
         .toolbarBackground(.hidden, for: .windowToolbar)
+        #endif
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {

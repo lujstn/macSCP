@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 enum InactivityTimeout: Int, CaseIterable, Sendable, Identifiable {
     case oneMinute = 60
@@ -158,7 +161,11 @@ final class AppLockManager {
     /// Returns true if the lock was successfully disabled.
     @discardableResult
     func disableBiometricLock() async -> Bool {
+        #if os(macOS)
         let success = await performAuthentication(reason: "Authenticate to disable Touch ID lock")
+        #else
+        let success = await performAuthentication(reason: "Authenticate to disable biometric lock")
+        #endif
         guard success else {
             logInfo("Biometric lock disable denied: auth failed", category: .auth)
             return false
@@ -240,8 +247,13 @@ final class AppLockManager {
 
     private func setupObservers() {
         // Lock when app goes to background (if enabled)
+        #if os(macOS)
+        let resignNotification = NSApplication.didResignActiveNotification
+        #else
+        let resignNotification = UIApplication.willResignActiveNotification
+        #endif
         backgroundObserver = NotificationCenter.default.addObserver(
-            forName: NSApplication.didResignActiveNotification,
+            forName: resignNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -254,8 +266,13 @@ final class AppLockManager {
         }
 
         // Reset inactivity timer on user interaction
+        #if os(macOS)
+        let activeNotification = NSApplication.didBecomeActiveNotification
+        #else
+        let activeNotification = UIApplication.didBecomeActiveNotification
+        #endif
         activityObserver = NotificationCenter.default.addObserver(
-            forName: NSApplication.didBecomeActiveNotification,
+            forName: activeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
