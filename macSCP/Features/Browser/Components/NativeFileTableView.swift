@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+
+#if os(macOS)
 import AppKit
 import UniformTypeIdentifiers
 
@@ -500,3 +502,136 @@ class ContextMenuTableView: NSTableView {
         return super.menu(for: event)
     }
 }
+
+#else
+// MARK: - iOS Implementation
+
+struct NativeFileTableView: View {
+    @Bindable var viewModel: FileBrowserViewModel
+    let onDoubleClick: (RemoteFile) -> Void
+    let onGetInfo: (RemoteFile) -> Void
+    let onOpenEditor: ((RemoteFile) -> Void)?
+
+    init(
+        viewModel: FileBrowserViewModel,
+        onDoubleClick: @escaping (RemoteFile) -> Void,
+        onGetInfo: @escaping (RemoteFile) -> Void,
+        onOpenEditor: ((RemoteFile) -> Void)? = nil
+    ) {
+        self.viewModel = viewModel
+        self.onDoubleClick = onDoubleClick
+        self.onGetInfo = onGetInfo
+        self.onOpenEditor = onOpenEditor
+    }
+
+    var body: some View {
+        List {
+            ForEach(viewModel.sortedFiles) { file in
+                Button {
+                    onDoubleClick(file)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: FileTypeService.iconName(for: file))
+                            .foregroundStyle(FileTypeService.iconColor(for: file))
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(file.name)
+                                .font(.body)
+                                .lineLimit(1)
+                                .foregroundStyle(.primary)
+
+                            HStack(spacing: 8) {
+                                Text(FileTypeService.typeDescription(for: file))
+                                if file.isFile {
+                                    Text(file.displaySize)
+                                }
+                                if let date = file.modificationDate {
+                                    Text(date.fileListDisplayString)
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        if file.isDirectory {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
+                    if file.isFile {
+                        Button {
+                            onOpenEditor?(file)
+                        } label: {
+                            Label("Open in Editor", systemImage: "pencil.and.outline")
+                        }
+                        Divider()
+                    }
+
+                    Button {
+                        viewModel.selectedFiles = [file.id]
+                        viewModel.copySelectedFiles()
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                    }
+
+                    Button {
+                        viewModel.selectedFiles = [file.id]
+                        viewModel.cutSelectedFiles()
+                    } label: {
+                        Label("Cut", systemImage: "scissors")
+                    }
+
+                    if viewModel.canPaste {
+                        Button {
+                            Task { await viewModel.paste() }
+                        } label: {
+                            Label("Paste", systemImage: "doc.on.clipboard")
+                        }
+                    }
+
+                    Divider()
+
+                    Button {
+                        viewModel.startRename(file)
+                    } label: {
+                        Label("Rename", systemImage: "pencil")
+                    }
+
+                    Button {
+                        onGetInfo(file)
+                    } label: {
+                        Label("Get Info", systemImage: "info.circle")
+                    }
+
+                    if file.isFile {
+                        Divider()
+                        Button {
+                            Task { await viewModel.downloadFile(file) }
+                        } label: {
+                            Label("Download", systemImage: "arrow.down.circle")
+                        }
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        viewModel.confirmDelete([file])
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+    }
+}
+
+#endif
