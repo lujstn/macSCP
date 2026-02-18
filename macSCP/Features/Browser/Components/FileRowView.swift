@@ -29,6 +29,17 @@ struct FileRowView: View {
 
             Spacer()
 
+            #if os(iOS)
+            // Size — flexible width on iOS
+            Text(file.displaySize)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+
+            // Date — flexible width on iOS
+            Text(file.modificationDate?.fileListDisplayString ?? "—")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+            #else
             // Size
             Text(file.displaySize)
                 .font(.system(size: 12))
@@ -41,11 +52,12 @@ struct FileRowView: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 100, alignment: .trailing)
 
-            // Permissions
+            // Permissions — hidden on iOS
             Text(file.permissions)
                 .font(.system(size: 11, design: .monospaced))
                 .foregroundStyle(.tertiary)
                 .frame(width: 90, alignment: .trailing)
+            #endif
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)

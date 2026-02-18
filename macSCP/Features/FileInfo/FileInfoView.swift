@@ -33,7 +33,9 @@ struct FileInfoView: View {
                 .padding()
             }
         }
+        #if os(macOS)
         .frame(width: WindowSize.fileInfo.width, height: WindowSize.fileInfo.height)
+        #endif
     }
 
     // MARK: - Sections

@@ -97,7 +97,9 @@ struct IconSelectorView: View {
             }
             .padding()
         }
+        #if os(macOS)
         .frame(width: 380, height: 420)
+        #endif
     }
 
     private var filteredIcons: [String] {

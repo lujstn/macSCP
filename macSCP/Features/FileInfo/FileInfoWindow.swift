@@ -40,7 +40,9 @@ struct FileInfoWindow: View {
                     }
             }
         }
+        #if os(macOS)
         .frame(width: WindowSize.fileInfo.width, height: WindowSize.fileInfo.height)
+        #endif
     }
 
     @MainActor
