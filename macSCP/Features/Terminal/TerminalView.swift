@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
-import AppKit
 import SwiftTerm
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: - Terminal View
 
@@ -24,7 +28,9 @@ struct TerminalContentView: View {
             // Terminal content
             terminalContent
         }
+        #if os(macOS)
         .frame(minWidth: WindowSize.minTerminal.width, minHeight: WindowSize.minTerminal.height)
+        #endif
         .task {
             await viewModel.connect()
         }
@@ -117,13 +123,14 @@ struct TerminalContentView: View {
     }
 }
 
-// MARK: - SwiftTerm View (Minimal Wrapper)
+// MARK: - SwiftTerm View (Platform-Specific Wrapper)
 
+#if os(macOS)
 struct SwiftTermView: NSViewRepresentable {
     @Bindable var viewModel: TerminalViewModel
 
-    func makeNSView(context: Context) -> TerminalView {
-        let terminal = TerminalView()
+    func makeNSView(context: Context) -> SwiftTerm.TerminalView {
+        let terminal = SwiftTerm.TerminalView()
         terminal.terminalDelegate = context.coordinator
         context.coordinator.terminal = terminal
 
@@ -142,7 +149,7 @@ struct SwiftTermView: NSViewRepresentable {
         return terminal
     }
 
-    func updateNSView(_ terminal: TerminalView, context: Context) {
+    func updateNSView(_ terminal: SwiftTerm.TerminalView, context: Context) {
         context.coordinator.terminal = terminal
     }
 
@@ -150,39 +157,105 @@ struct SwiftTermView: NSViewRepresentable {
         Coordinator(viewModel: viewModel)
     }
 
-    class Coordinator: NSObject, TerminalViewDelegate {
+    class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
         var viewModel: TerminalViewModel
-        weak var terminal: TerminalView?
+        weak var terminal: SwiftTerm.TerminalView?
 
         init(viewModel: TerminalViewModel) {
             self.viewModel = viewModel
         }
 
-        func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
+        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {
             guard newCols > 0, newRows > 0 else { return }
             viewModel.resize(columns: newCols, rows: newRows)
         }
 
-        func setTerminalTitle(source: TerminalView, title: String) {}
+        func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
 
-        func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
+        func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
 
-        func send(source: TerminalView, data: ArraySlice<UInt8>) {
+        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {
             viewModel.sendInput(Data(data))
         }
 
-        func scrolled(source: TerminalView, position: Double) {}
+        func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
 
-        func clipboardCopy(source: TerminalView, content: Data) {
+        func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {
             if let string = String(data: content, encoding: .utf8) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(string, forType: .string)
             }
         }
 
-        func rangeChanged(source: TerminalView, startY: Int, endY: Int) {}
+        func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
     }
 }
+
+#else
+struct SwiftTermView: UIViewRepresentable {
+    @Bindable var viewModel: TerminalViewModel
+
+    func makeUIView(context: Context) -> SwiftTerm.TerminalView {
+        let terminal = SwiftTerm.TerminalView()
+        terminal.terminalDelegate = context.coordinator
+        context.coordinator.terminal = terminal
+
+        // Set up output callback
+        viewModel.onOutput = { [weak coordinator = context.coordinator] data in
+            DispatchQueue.main.async {
+                coordinator?.terminal?.feed(byteArray: ArraySlice([UInt8](data)))
+            }
+        }
+
+        // Focus after appearing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            terminal.becomeFirstResponder()
+        }
+
+        return terminal
+    }
+
+    func updateUIView(_ terminal: SwiftTerm.TerminalView, context: Context) {
+        context.coordinator.terminal = terminal
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(viewModel: viewModel)
+    }
+
+    class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
+        var viewModel: TerminalViewModel
+        weak var terminal: SwiftTerm.TerminalView?
+
+        init(viewModel: TerminalViewModel) {
+            self.viewModel = viewModel
+        }
+
+        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {
+            guard newCols > 0, newRows > 0 else { return }
+            viewModel.resize(columns: newCols, rows: newRows)
+        }
+
+        func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
+
+        func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
+
+        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {
+            viewModel.sendInput(Data(data))
+        }
+
+        func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
+
+        func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {
+            if let string = String(data: content, encoding: .utf8) {
+                UIPasteboard.general.string = string
+            }
+        }
+
+        func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
+    }
+}
+#endif
 
 // MARK: - Preview
 
