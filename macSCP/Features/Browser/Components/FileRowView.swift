@@ -12,7 +12,7 @@ struct FileRowView: View {
     let isSelected: Bool
     let onDoubleClick: () -> Void
 
-    var body: some View {
+    private var rowContent: some View {
         HStack(spacing: 10) {
             // Icon
             Image(systemName: FileTypeService.iconName(for: file))
@@ -49,10 +49,22 @@ struct FileRowView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
-        .contentShape(Rectangle())
-        .onTapGesture(count: 2) {
-            onDoubleClick()
+    }
+
+    var body: some View {
+#if os(iOS)
+        Button(action: onDoubleClick) {
+            rowContent
         }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+#else
+        rowContent
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2) {
+                onDoubleClick()
+            }
+#endif
     }
 }
 
