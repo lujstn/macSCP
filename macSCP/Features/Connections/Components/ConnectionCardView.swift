@@ -17,10 +17,174 @@ struct ConnectionCardView: View {
     let onDelete: () -> Void
     let onSelect: (Bool) -> Void
 
+    #if os(macOS)
     @State private var isHovering = false
     @State private var isPressed = false
+    #endif
 
     var body: some View {
+        #if os(iOS)
+        iOSBody
+        #else
+        macOSBody
+        #endif
+    }
+
+    // MARK: - iOS Body
+
+    #if os(iOS)
+    private var iOSBody: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header with icon
+            HStack(spacing: 12) {
+                // Server icon
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 42, height: 42)
+
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.blue.opacity(0.2),
+                                    Color.cyan.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 42, height: 42)
+
+                    Image(systemName: connection.iconName)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(.blue)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(connection.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text(connection.connectionString)
+                        .font(.system(size: 11, weight: .regular, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+            }
+
+            // Description
+            if let description = connection.description, !description.isEmpty {
+                Text(description)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Spacer(minLength: 0)
+
+            // Tags and action buttons — always visible
+            HStack(spacing: 6) {
+                if !connection.tags.isEmpty {
+                    ForEach(connection.tags.prefix(2), id: \.self) { tag in
+                        Text(tag)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.ultraThinMaterial, in: Capsule())
+                    }
+                    if connection.tags.count > 2 {
+                        Text("+\(connection.tags.count - 2)")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                Spacer()
+
+                // Action buttons — always visible on iOS
+                HStack(spacing: 8) {
+                    Button(action: onConnect) {
+                        Image(systemName: "folder.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.primary.opacity(0.8))
+                            .frame(width: 30, height: 30)
+                            .background(.primary.opacity(0.1), in: Circle())
+                    }
+                    .buttonStyle(.borderless)
+
+                    if connection.connectionType == .sftp {
+                        Button(action: onOpenTerminal) {
+                            Image(systemName: "terminal.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.primary.opacity(0.8))
+                                .frame(width: 30, height: 30)
+                                .background(.primary.opacity(0.1), in: Circle())
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(Color.accentColor, lineWidth: 1.5)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { onConnect() }
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+        .contextMenu {
+            Button {
+                onConnect()
+            } label: {
+                Label("Open File Browser", systemImage: "folder")
+            }
+
+            Button {
+                onOpenTerminal()
+            } label: {
+                Label("Open Terminal", systemImage: "terminal")
+            }
+            .disabled(connection.connectionType != .sftp)
+
+            Divider()
+
+            Button {
+                onEdit()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+
+            Button {
+                onDuplicate()
+            } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+            }
+
+            Divider()
+
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+    #endif
+
+    // MARK: - macOS Body
+
+    #if os(macOS)
+    private var macOSBody: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with icon
             HStack(spacing: 12) {
@@ -236,6 +400,7 @@ struct ConnectionCardView: View {
             }
         }
     }
+    #endif
 }
 
 // MARK: - Preview

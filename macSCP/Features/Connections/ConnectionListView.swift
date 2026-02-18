@@ -22,7 +22,12 @@ struct ConnectionListView: View {
         } detail: {
             ConnectionGridView(viewModel: viewModel)
         }
+        #if os(iOS)
+        .navigationTitle("macSCP")
+        .navigationBarTitleDisplayMode(.inline)
+        #else
         .navigationTitle("")
+        #endif
         #if os(macOS)
         .toolbarBackground(.hidden, for: .windowToolbar)
         #endif
