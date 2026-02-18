@@ -78,7 +78,11 @@ struct SearchReplaceBar: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
+                #endif
             }
 
             // Replace row

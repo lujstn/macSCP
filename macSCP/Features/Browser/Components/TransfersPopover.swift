@@ -42,7 +42,11 @@ struct TransfersPopover: View {
                 Button("Cancel All") {
                     viewModel.cancelAllTransfers()
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
+                #endif
                 .font(.system(size: 12))
                 .foregroundStyle(.red)
             }
@@ -52,7 +56,11 @@ struct TransfersPopover: View {
                 Button("Clear") {
                     viewModel.clearCompletedTransfers()
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
+                #endif
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
             }
@@ -181,8 +189,10 @@ struct TransferItemView: View {
                         .font(.system(size: 16))
                         .foregroundStyle(.secondary)
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
-                #if os(macOS)
                 .help("Cancel upload")
                 #endif
             }
@@ -195,7 +205,7 @@ struct TransferItemView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
             }
             #else
             // shown on hover for completed/failed/cancelled

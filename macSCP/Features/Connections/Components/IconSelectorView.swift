@@ -27,7 +27,11 @@ struct IconSelectorView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.secondary)
                     }
+                    #if os(iOS)
+                    .buttonStyle(.borderless)
+                    #else
                     .buttonStyle(.plain)
+                    #endif
                 }
             }
             .padding(8)
@@ -133,7 +137,11 @@ private struct CategoryTab: View {
                 }
             }
         }
+        #if os(iOS)
+        .buttonStyle(.borderless)
+        #else
         .buttonStyle(.plain)
+        #endif
     }
 }
 
@@ -159,6 +167,7 @@ private struct IconCell: View {
                 }
         }
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
         .onHover { hovering in
             isHovering = hovering
         }

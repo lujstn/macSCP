@@ -36,6 +36,7 @@ struct ConnectionFormSheet: View {
     // Wizard state
     @State private var currentStep: FormStep = .selectType
     @State private var selectedType: ConnectionType = .sftp
+    @State private var hasSelectedType: Bool = false
 
     // Form fields
     @State private var name: String = ""
@@ -83,42 +84,257 @@ struct ConnectionFormSheet: View {
     }
 
     var body: some View {
+        #if os(iOS)
+        iOSBody
+        #else
+        macOSBody
+        #endif
+    }
+
+    // MARK: - iOS Body
+
+    #if os(iOS)
+    private var iOSBody: some View {
+        NavigationStack {
+            Group {
+                if isEditMode {
+                    iOSDetailsForm
+                } else {
+                    switch currentStep {
+                    case .selectType:
+                        iOSTypeSelection
+                    case .fillDetails:
+                        iOSDetailsForm
+                    }
+                }
+            }
+            .navigationTitle(headerTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(currentStep == .fillDetails && !isEditMode ? "Back" : "Cancel") {
+                        if currentStep == .fillDetails && !isEditMode {
+                            currentStep = .selectType
+                        } else {
+                            onCancel()
+                        }
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(currentStep == .selectType && !isEditMode ? "Continue" : mode.saveButtonTitle) {
+                        if currentStep == .selectType && !isEditMode {
+                            currentStep = .fillDetails
+                        } else {
+                            save()
+                        }
+                    }
+                    .fontWeight(currentStep == .fillDetails || isEditMode ? .semibold : nil)
+                    .disabled(currentStep == .selectType && !isEditMode ? !hasSelectedType : !isValid)
+                }
+            }
+        }
+        .onAppear { loadExistingData() }
+    }
+
+    private var iOSTypeSelection: some View {
+        List(ConnectionType.allCases, id: \.self, selection: Binding<ConnectionType?>(
+            get: { hasSelectedType ? selectedType : nil },
+            set: { type in
+                if let type {
+                    selectedType = type
+                    hasSelectedType = true
+                    iconName = type.iconName
+                    if type == .sftp { port = "22" }
+                }
+            }
+        )) { type in
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(selectedType == type && hasSelectedType ? .blue : .blue.opacity(0.1))
+                        .frame(width: 36, height: 36)
+
+                    Image(systemName: type.iconName)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(selectedType == type && hasSelectedType ? .white : .blue)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(type.displayName)
+                        .font(.body.weight(.medium))
+                    Text(type.description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 4)
+            .tag(type)
+        }
+        .listStyle(.insetGrouped)
+    }
+
+    private var iOSDetailsForm: some View {
+        Form {
+            connectionFormSections
+        }
+    }
+    #endif
+
+    // MARK: - macOS Body
+
+    #if os(macOS)
+    private var macOSBody: some View {
         VStack(spacing: 0) {
-            // Header
             header
 
             Divider()
 
-            // Content based on step
             if isEditMode {
-                // Edit mode: skip type selection, go straight to form
-                detailsFormView
+                macOSDetailsFormView
             } else {
                 switch currentStep {
                 case .selectType:
-                    typeSelectionView
+                    macOSTypeSelectionView
                 case .fillDetails:
-                    detailsFormView
+                    macOSDetailsFormView
                 }
             }
         }
         .frame(width: 500, height: currentStep == .selectType && !isEditMode ? 480 : 580)
         .animation(.easeInOut(duration: 0.2), value: currentStep)
-        .onAppear {
-            loadExistingData()
+        .onAppear { loadExistingData() }
+    }
+    #endif
+
+    // MARK: - Shared Form Sections
+
+    @ViewBuilder
+    private var connectionFormSections: some View {
+        // Show selected type badge
+        Section {
+            HStack {
+                Image(systemName: selectedType.iconName)
+                    .font(.system(size: 14))
+                    .foregroundStyle(.blue)
+                Text(selectedType.displayName)
+                    .font(.system(size: 13, weight: .medium))
+                Spacer()
+                Text(selectedType.description)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        }
+
+        // Connection details based on type
+        Section("Connection") {
+            TextField("Name", text: $name)
+
+            if selectedType == .sftp {
+                TextField("Host", text: $host)
+                TextField("Port", text: $port)
+                TextField("Username", text: $username)
+            } else if selectedType == .s3 {
+                TextField("Access Key ID", text: $username)
+                SecureField("Secret Access Key", text: $s3SecretAccessKey)
+                TextField("Bucket", text: $s3Bucket)
+                TextField("Region", text: $s3Region)
+                    .textContentType(.none)
+                TextField("Custom Endpoint (optional)", text: $s3Endpoint)
+                    .textContentType(.URL)
+            }
+        }
+
+        // Authentication (SFTP only)
+        if selectedType == .sftp {
+            Section("Authentication") {
+                Picker("Method", selection: $authMethod) {
+                    ForEach(AuthMethod.allCases, id: \.self) { method in
+                        Text(method.displayName).tag(method)
+                    }
+                }
+
+                if authMethod == .password {
+                    SecureField("Password", text: $password)
+                    Toggle("Save password in Keychain", isOn: $savePassword)
+                } else {
+                    HStack {
+                        TextField("Private Key Path", text: $privateKeyPath)
+                        #if os(macOS)
+                        Button("Browse") {
+                            browseForKey()
+                        }
+                        #endif
+                    }
+                }
+            }
+        } else if selectedType == .s3 {
+            Section("Security") {
+                Toggle("Save credentials in Keychain", isOn: $savePassword)
+            }
+        }
+
+        // Organization
+        Section("Organization") {
+            Picker("Folder", selection: $selectedFolderId) {
+                Text("None").tag(nil as UUID?)
+                ForEach(folders) { folder in
+                    Text(folder.name).tag(folder.id as UUID?)
+                }
+            }
+
+            // Tags
+            LabeledContent("Tags") {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        TextField("", text: $newTag)
+                            .onSubmit {
+                                addTag()
+                            }
+                        Button {
+                            addTag()
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(newTag.trimmed.isEmpty ? Color.gray : Color.blue)
+                        }
+                        #if os(iOS)
+                        .buttonStyle(.borderless)
+                        #else
+                        .buttonStyle(.plain)
+                        #endif
+                        .disabled(newTag.trimmed.isEmpty)
+                    }
+
+                    if !tags.isEmpty {
+                        FlowLayout(spacing: 6) {
+                            ForEach(tags, id: \.self) { tag in
+                                TagChip(tag: tag) {
+                                    removeTag(tag)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Optional
+        Section("Optional") {
+            TextField("Description", text: $description, axis: .vertical)
+                .lineLimit(2...4)
+
+            IconPickerRow(selectedIcon: $iconName)
         }
     }
 
-    // MARK: - Header
+    // MARK: - macOS Header
 
+    #if os(macOS)
     private var header: some View {
         HStack {
-            // Back button (only in step 2 for create mode)
             if currentStep == .fillDetails && !isEditMode {
                 Button {
-                    withAnimation {
-                        currentStep = .selectType
-                    }
+                    withAnimation { currentStep = .selectType }
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
@@ -133,7 +349,6 @@ struct ConnectionFormSheet: View {
 
             Spacer()
 
-            // Title
             VStack(spacing: 2) {
                 Text(headerTitle)
                     .font(.headline)
@@ -151,7 +366,6 @@ struct ConnectionFormSheet: View {
 
             Spacer()
 
-            // Close button
             Button {
                 onCancel()
             } label: {
@@ -163,6 +377,7 @@ struct ConnectionFormSheet: View {
         }
         .padding()
     }
+    #endif
 
     private var headerTitle: String {
         if isEditMode {
@@ -176,11 +391,11 @@ struct ConnectionFormSheet: View {
         }
     }
 
-    // MARK: - Step 1: Type Selection
+    // MARK: - macOS Step 1: Type Selection
 
-    private var typeSelectionView: some View {
+    #if os(macOS)
+    private var macOSTypeSelectionView: some View {
         VStack(spacing: 0) {
-            // Grid of connection types
             ScrollView {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     ForEach(ConnectionType.allCases, id: \.self) { type in
@@ -191,9 +406,7 @@ struct ConnectionFormSheet: View {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 selectedType = type
                                 iconName = type.iconName
-                                if type == .sftp {
-                                    port = "22"
-                                }
+                                if type == .sftp { port = "22" }
                             }
                         }
                     }
@@ -203,19 +416,14 @@ struct ConnectionFormSheet: View {
 
             Divider()
 
-            // Footer
             HStack {
                 Spacer()
 
-                Button("Cancel") {
-                    onCancel()
-                }
-                .keyboardShortcut(.cancelAction)
+                Button("Cancel") { onCancel() }
+                    .keyboardShortcut(.cancelAction)
 
                 Button("Continue") {
-                    withAnimation {
-                        currentStep = .fillDetails
-                    }
+                    withAnimation { currentStep = .fillDetails }
                 }
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
@@ -223,133 +431,24 @@ struct ConnectionFormSheet: View {
             .padding()
         }
     }
+    #endif
 
-    // MARK: - Step 2: Details Form
+    // MARK: - macOS Step 2: Details Form
 
-    private var detailsFormView: some View {
+    #if os(macOS)
+    private var macOSDetailsFormView: some View {
         VStack(spacing: 0) {
             Form {
-                // Show selected type badge in edit mode or step 2
-                Section {
-                    HStack {
-                        Image(systemName: selectedType.iconName)
-                            .font(.system(size: 14))
-                            .foregroundStyle(.blue)
-                        Text(selectedType.displayName)
-                            .font(.system(size: 13, weight: .medium))
-                        Spacer()
-                        Text(selectedType.description)
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                // Connection details based on type
-                Section("Connection") {
-                    TextField("Name", text: $name)
-
-                    if selectedType == .sftp {
-                        TextField("Host", text: $host)
-                        TextField("Port", text: $port)
-                        TextField("Username", text: $username)
-                    } else if selectedType == .s3 {
-                        TextField("Access Key ID", text: $username)
-                        SecureField("Secret Access Key", text: $s3SecretAccessKey)
-                        TextField("Bucket", text: $s3Bucket)
-                        TextField("Region", text: $s3Region)
-                            .textContentType(.none)
-                        TextField("Custom Endpoint (optional)", text: $s3Endpoint)
-                            .textContentType(.URL)
-                    }
-                }
-
-                // Authentication (SFTP only)
-                if selectedType == .sftp {
-                    Section("Authentication") {
-                        Picker("Method", selection: $authMethod) {
-                            ForEach(AuthMethod.allCases, id: \.self) { method in
-                                Text(method.displayName).tag(method)
-                            }
-                        }
-
-                        if authMethod == .password {
-                            SecureField("Password", text: $password)
-                            Toggle("Save password in Keychain", isOn: $savePassword)
-                        } else {
-                            HStack {
-                                TextField("Private Key Path", text: $privateKeyPath)
-                                Button("Browse") {
-                                    browseForKey()
-                                }
-                            }
-                        }
-                    }
-                } else if selectedType == .s3 {
-                    Section("Security") {
-                        Toggle("Save credentials in Keychain", isOn: $savePassword)
-                    }
-                }
-
-                // Organization
-                Section("Organization") {
-                    Picker("Folder", selection: $selectedFolderId) {
-                        Text("None").tag(nil as UUID?)
-                        ForEach(folders) { folder in
-                            Text(folder.name).tag(folder.id as UUID?)
-                        }
-                    }
-
-                    // Tags
-                    LabeledContent("Tags") {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                TextField("", text: $newTag)
-                                    .onSubmit {
-                                        addTag()
-                                    }
-                                Button {
-                                    addTag()
-                                } label: {
-                                    Image(systemName: "plus.circle.fill")
-                                        .foregroundStyle(newTag.trimmed.isEmpty ? Color.gray : Color.blue)
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(newTag.trimmed.isEmpty)
-                            }
-
-                            if !tags.isEmpty {
-                                FlowLayout(spacing: 6) {
-                                    ForEach(tags, id: \.self) { tag in
-                                        TagChip(tag: tag) {
-                                            removeTag(tag)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Optional
-                Section("Optional") {
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(2...4)
-
-                    IconPickerRow(selectedIcon: $iconName)
-                }
+                connectionFormSections
             }
             .formStyle(.grouped)
 
             Divider()
 
-            // Footer
             HStack {
                 if !isEditMode {
                     Button {
-                        withAnimation {
-                            currentStep = .selectType
-                        }
+                        withAnimation { currentStep = .selectType }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
@@ -361,20 +460,17 @@ struct ConnectionFormSheet: View {
 
                 Spacer()
 
-                Button("Cancel") {
-                    onCancel()
-                }
-                .keyboardShortcut(.cancelAction)
+                Button("Cancel") { onCancel() }
+                    .keyboardShortcut(.cancelAction)
 
-                Button(mode.saveButtonTitle) {
-                    save()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!isValid)
+                Button(mode.saveButtonTitle) { save() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!isValid)
             }
             .padding()
         }
     }
+    #endif
 
     // MARK: - Validation
 
@@ -422,6 +518,7 @@ struct ConnectionFormSheet: View {
             }
 
             // Skip to details in edit mode
+            hasSelectedType = true
             currentStep = .fillDetails
         }
     }
@@ -562,6 +659,7 @@ struct ConnectionTypeCard: View {
             )
         }
         .buttonStyle(.plain)
+        .contentShape(RoundedRectangle(cornerRadius: 12))
         .onHover { hovering in
             isHovering = hovering
         }
@@ -628,7 +726,11 @@ struct TagChip: View {
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(isHovering ? .red : .secondary)
             }
+            #if os(iOS)
+            .buttonStyle(.borderless)
+            #else
             .buttonStyle(.plain)
+            #endif
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)

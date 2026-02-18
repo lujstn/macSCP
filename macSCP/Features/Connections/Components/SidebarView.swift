@@ -42,9 +42,22 @@ struct SidebarView: View {
                         Text("All Connections")
                     } icon: {
                         Image(systemName: "server.rack")
-                            .foregroundStyle(isAllConnectionsSelected ? .white : .blue)
+                            #if os(macOS)
+                            .foregroundStyle(Color(red: 0, green: 122/255.0, blue: 1))
+                            #endif
                     }
                 }
+                #if os(macOS)
+                .listRowBackground(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(isAllConnectionsSelected ? Color.black.opacity(0.05) : .clear)
+                        .padding(.horizontal, 4)
+                )
+                #endif
+                #if os(iOS)
+                .foregroundStyle(isAllConnectionsSelected ? .blue : .primary)
+                .tint(.blue)
+                #endif
 
                 // Folders Section
                 Section("Folders") {
@@ -64,6 +77,13 @@ struct SidebarView: View {
                                 }
                             )
                         }
+                        #if os(macOS)
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(isFolderSelected(folder.id) ? Color.black.opacity(0.05) : .clear)
+                                .padding(.horizontal, 4)
+                        )
+                        #endif
                     }
 
                     // New Folder Button
@@ -73,10 +93,20 @@ struct SidebarView: View {
                         Label("New Folder", systemImage: "folder.badge.plus")
                             .foregroundStyle(.secondary)
                     }
+                    #if os(iOS)
+                    .buttonStyle(.borderless)
+                    #else
                     .buttonStyle(.plain)
+                    #endif
                 }
+                #if os(iOS)
+                .headerProminence(.increased)
+                #endif
             }
             .listStyle(.sidebar)
+            #if os(macOS)
+            .scrollContentBackground(.hidden)
+            #endif
 
             // Report Bug Card
             Button {
@@ -84,22 +114,22 @@ struct SidebarView: View {
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "ladybug.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: 17))
                         .foregroundStyle(.orange)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Found a bug?")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.primary)
                         Text("Report it on GitHub")
-                            .font(.system(size: 10))
+                            .font(.system(size: 13))
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
                     Image(systemName: "arrow.up.right")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.tertiary)
                 }
                 .padding(10)
@@ -108,11 +138,18 @@ struct SidebarView: View {
                         .fill(Color.primary.opacity(0.05))
                 )
             }
+            #if os(iOS)
+            .buttonStyle(.borderless)
+            #else
             .buttonStyle(.plain)
+            #endif
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
         }
+        #if os(macOS)
+        .background(Color(red: 247/255.0, green: 247/255.0, blue: 247/255.0))
         .frame(minWidth: 230, idealWidth: 230)
+        #endif
     }
 }
 
@@ -146,8 +183,15 @@ struct FolderRowView: View {
             }
         } icon: {
             Image(systemName: "folder.fill")
-                .foregroundStyle(isSelected ? .white : .cyan)
+                #if os(macOS)
+                .foregroundStyle(.cyan)
+                #else
+                .foregroundStyle(isSelected ? .blue : .cyan)
+                #endif
         }
+        #if os(iOS)
+        .foregroundStyle(isSelected ? .blue : .primary)
+        #endif
         .contextMenu {
             Button {
                 newName = folder.name

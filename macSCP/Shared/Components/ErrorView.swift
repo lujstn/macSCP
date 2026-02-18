@@ -109,7 +109,11 @@ struct CompactErrorView: View {
                                 .fill(isHovering ? Color.primary.opacity(0.1) : .clear)
                         }
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
+                #endif
                 .onHover { hovering in
                     isHovering = hovering
                 }
@@ -158,7 +162,11 @@ struct ErrorBannerView: View {
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(.white.opacity(0.8))
                 }
+                #if os(iOS)
+                .buttonStyle(.borderless)
+                #else
                 .buttonStyle(.plain)
+                #endif
             }
         }
         .padding(.horizontal, 16)
