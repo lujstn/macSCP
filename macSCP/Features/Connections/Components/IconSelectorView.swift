@@ -151,26 +151,39 @@ private struct IconCell: View {
     let isSelected: Bool
     let action: () -> Void
 
+    #if os(macOS)
     @State private var isHovering = false
+    #endif
 
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 18))
                 .frame(width: 44, height: 44)
+                #if os(iOS)
+                .foregroundStyle(isSelected ? .white : .primary)
+                .background(isSelected ? Color.blue : Color.clear)
+                #else
                 .foregroundStyle(isSelected ? .white : (isHovering ? .blue : .primary))
                 .background(isSelected ? Color.blue : (isHovering ? Color.blue.opacity(0.1) : Color.clear))
+                #endif
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8)
+                        #if os(iOS)
+                        .strokeBorder(isSelected ? Color.blue : Color.clear, lineWidth: 1.5)
+                        #else
                         .strokeBorder(isSelected ? Color.blue : (isHovering ? Color.blue.opacity(0.3) : Color.clear), lineWidth: 1.5)
+                        #endif
                 }
         }
         .buttonStyle(.plain)
         .contentShape(Rectangle())
+        #if os(macOS)
         .onHover { hovering in
             isHovering = hovering
         }
+        #endif
     }
 }
 

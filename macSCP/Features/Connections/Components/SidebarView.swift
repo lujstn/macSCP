@@ -54,10 +54,6 @@ struct SidebarView: View {
                         .padding(.horizontal, 4)
                 )
                 #endif
-                #if os(iOS)
-                .foregroundStyle(isAllConnectionsSelected ? .blue : .primary)
-                .tint(.blue)
-                #endif
 
                 // Folders Section
                 Section("Folders") {
@@ -183,15 +179,8 @@ struct FolderRowView: View {
             }
         } icon: {
             Image(systemName: "folder.fill")
-                #if os(macOS)
                 .foregroundStyle(.cyan)
-                #else
-                .foregroundStyle(isSelected ? .blue : .cyan)
-                #endif
         }
-        #if os(iOS)
-        .foregroundStyle(isSelected ? .blue : .primary)
-        #endif
         .contextMenu {
             Button {
                 newName = folder.name
