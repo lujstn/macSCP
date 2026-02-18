@@ -106,7 +106,9 @@ struct BrowserToolbar: View {
             } label: {
                 ToolbarButtonLabel(icon: "plus", tooltip: "New")
             }
+            #if os(macOS)
             .menuStyle(.borderlessButton)
+            #endif
             .frame(width: 32)
 
             ToolbarButton(
@@ -188,7 +190,9 @@ struct BrowserToolbar: View {
             } label: {
                 ToolbarButtonLabel(icon: "arrow.up.arrow.down", tooltip: "Sort")
             }
+            #if os(macOS)
             .menuStyle(.borderlessButton)
+            #endif
             .frame(width: 32)
         }
     }
