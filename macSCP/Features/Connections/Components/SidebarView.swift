@@ -26,9 +26,16 @@ struct SidebarView: View {
         return false
     }
 
+    private var sidebarSelection: Binding<SidebarSelection?> {
+        Binding(
+            get: { viewModel.selectedSidebarItem },
+            set: { viewModel.selectedSidebarItem = $0 ?? .allConnections }
+        )
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            List(selection: $viewModel.selectedSidebarItem) {
+            List(selection: sidebarSelection) {
                 // All Connections
                 NavigationLink(value: SidebarSelection.allConnections) {
                     Label {

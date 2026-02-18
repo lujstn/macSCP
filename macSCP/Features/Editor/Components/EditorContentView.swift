@@ -14,7 +14,7 @@ struct EditorContentView: View {
         TextEditor(text: $viewModel.content)
             .font(.system(.body, design: .monospaced))
             .scrollContentBackground(.hidden)
-            .background(Color(.textBackgroundColor))
+            .background(Color.platformControlBackground)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

@@ -106,7 +106,7 @@ struct SearchReplaceBar: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.controlBackgroundColor))
+        .background(Color.platformControlBackground)
         .onAppear {
             isSearchFocused = true
         }

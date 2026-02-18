@@ -121,11 +121,11 @@ extension EmptyStateView {
         action: {}
     )
     .frame(width: 400, height: 350)
-    .background(Color(.windowBackgroundColor))
+    .background(Color.platformWindowBackground)
 }
 
 #Preview("No Connections") {
     EmptyStateView.noConnections
         .frame(width: 400, height: 350)
-        .background(Color(.windowBackgroundColor))
+        .background(Color.platformWindowBackground)
 }

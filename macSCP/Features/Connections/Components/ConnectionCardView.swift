@@ -277,5 +277,5 @@ struct ConnectionCardView: View {
     }
     .padding(24)
     .frame(width: 520)
-    .background(Color(.windowBackgroundColor))
+    .background(Color.platformWindowBackground)
 }

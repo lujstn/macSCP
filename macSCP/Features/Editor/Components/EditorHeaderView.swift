@@ -65,7 +65,7 @@ struct EditorHeaderView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.windowBackgroundColor))
+        .background(Color.platformWindowBackground)
     }
 }
 

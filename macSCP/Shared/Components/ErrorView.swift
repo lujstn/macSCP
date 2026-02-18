@@ -211,7 +211,7 @@ extension View {
         retryAction: {}
     )
     .frame(width: 350, height: 350)
-    .background(Color(.windowBackgroundColor))
+    .background(Color.platformWindowBackground)
 }
 
 #Preview("Compact Error") {
@@ -239,5 +239,5 @@ extension View {
     }
     .padding()
     .frame(width: 400, height: 200)
-    .background(Color(.windowBackgroundColor))
+    .background(Color.platformWindowBackground)
 }

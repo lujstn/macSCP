@@ -39,6 +39,16 @@
 		477B69712F2A5F5900B7EBC3 /* macSCPTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSCPTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		47IPAD0012F50000000000001 /* Exceptions for "macSCP" folder in "macSCP" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 47384B722E96EB2800ECB4B5 /* macSCP */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4721B2912F2C013B00279B18 /* macSCPUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -47,6 +57,9 @@
 		};
 		47384B752E96EB2800ECB4B5 /* macSCP */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				47IPAD0012F50000000000001 /* Exceptions for "macSCP" folder in "macSCP" target */,
+			);
 			path = macSCP;
 			sourceTree = "<group>";
 		};

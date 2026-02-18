@@ -485,6 +485,7 @@ struct ConnectionFormSheet: View {
     // MARK: - Helpers
 
     private func browseForKey() {
+        #if os(macOS)
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -494,6 +495,7 @@ struct ConnectionFormSheet: View {
         if panel.runModal() == .OK, let url = panel.url {
             privateKeyPath = url.path
         }
+        #endif
     }
 
     private func addTag() {

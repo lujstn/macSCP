@@ -142,7 +142,7 @@ struct PulsingLoadingView: View {
 
 #Preview("Loading Overlay") {
     ZStack {
-        Color(.windowBackgroundColor)
+        Color.platformWindowBackground
         LoadingOverlayView(message: "Uploading file...")
     }
     .frame(width: 400, height: 300)

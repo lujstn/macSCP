@@ -36,7 +36,7 @@ struct ConnectionGridView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.windowBackgroundColor))
+        .background(Color.platformWindowBackground)
     }
 
     @ViewBuilder

@@ -436,6 +436,7 @@ final class FileBrowserViewModel {
     // MARK: - Download/Upload
 
     func downloadFile(_ file: RemoteFile) async {
+        #if os(macOS)
         let panel = NSSavePanel()
         panel.nameFieldStringValue = file.name
         panel.canCreateDirectories = true
@@ -450,9 +451,21 @@ final class FileBrowserViewModel {
             logError("Download failed: \(error)", category: .sftp)
             self.error = AppError.from(error)
         }
+        #else
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(file.name)
+        do {
+            try await fileRepository.download(remotePath: file.path, to: url)
+            AnalyticsService.trackFileDownloaded(protocol: .init(from: connection.connectionType), fileCount: 1, totalBytes: file.size)
+            logInfo("Downloaded: \(file.name)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+        } catch {
+            logError("Download failed: \(error)", category: .sftp)
+            self.error = AppError.from(error)
+        }
+        #endif
     }
 
     func uploadFiles() async {
+        #if os(macOS)
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
@@ -461,6 +474,7 @@ final class FileBrowserViewModel {
         guard panel.runModal() == .OK else { return }
 
         await uploadURLs(panel.urls)
+        #endif
     }
 
     /// Core upload method that handles multiple files with progress tracking

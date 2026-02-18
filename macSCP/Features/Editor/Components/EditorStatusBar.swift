@@ -44,7 +44,7 @@ struct EditorStatusBar: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 6)
-        .background(Color(.windowBackgroundColor))
+        .background(Color.platformWindowBackground)
     }
 }
 

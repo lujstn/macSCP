@@ -55,7 +55,7 @@ struct FileInfoView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.controlBackgroundColor))
+        .background(Color.platformControlBackground)
     }
 
     private var generalSection: some View {
@@ -129,7 +129,7 @@ private struct InfoSection<Content: View>: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: UIConstants.smallCornerRadius))
+            .background(Color.platformControlBackground, in: RoundedRectangle(cornerRadius: UIConstants.smallCornerRadius))
         }
     }
 }

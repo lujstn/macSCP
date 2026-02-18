@@ -117,5 +117,5 @@ struct FileIconView: View {
         )
     }
     .padding()
-    .background(Color(.windowBackgroundColor))
+    .background(Color.platformWindowBackground)
 }
