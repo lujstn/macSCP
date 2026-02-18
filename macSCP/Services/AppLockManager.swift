@@ -129,7 +129,11 @@ final class AppLockManager {
     /// Attempt to unlock the app
     func unlock() {
         Task { @MainActor in
+            #if os(macOS)
             let success = await performAuthentication(reason: "Unlock macSCP")
+            #else
+            let success = await performAuthentication(reason: "Unlock the app")
+            #endif
             if success {
                 resetInactivityTimer()
             }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import LocalAuthentication
 
 struct SettingsView: View {
     @State private var appLockManager = AppLockManager.shared
@@ -17,6 +18,17 @@ struct SettingsView: View {
 
     private var isEnabled: Bool {
         appLockManager.isBiometricLockEnabled
+    }
+
+    private var biometryIconName: String {
+        let context = LAContext()
+        _ = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        switch context.biometryType {
+        case .faceID: return "faceid"
+        case .touchID: return "touchid"
+        case .opticID: return "opticid"
+        @unknown default: return "lock.shield"
+        }
     }
 
     var body: some View {
@@ -50,7 +62,7 @@ struct SettingsView: View {
                 #if os(macOS)
                 Label("Require Touch ID", systemImage: "touchid")
                 #else
-                Label("Require Biometric Auth", systemImage: "faceid")
+                Label("Require Biometric Auth", systemImage: biometryIconName)
                 #endif
             }
             .disabled(!isBiometricAvailable)
