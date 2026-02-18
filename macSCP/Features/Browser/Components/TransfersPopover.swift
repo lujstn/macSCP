@@ -24,8 +24,10 @@ struct TransfersPopover: View {
                 transfersList
             }
         }
+        #if os(macOS)
         .frame(width: 320, height: min(CGFloat(viewModel.allTransfers.count * 72 + 52), 400))
         .background(.ultraThickMaterial)
+        #endif
     }
 
     private var header: some View {
@@ -103,7 +105,9 @@ struct TransferItemView: View {
     let onCancel: () -> Void
     let onRemove: () -> Void
 
+    #if os(macOS)
     @State private var isHovering = false
+    #endif
 
     var body: some View {
         HStack(spacing: 12) {
@@ -178,10 +182,23 @@ struct TransferItemView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+                #if os(macOS)
                 .help("Cancel upload")
+                #endif
             }
 
-            // Remove button (shown on hover for completed/failed/cancelled)
+            // Remove button for completed/failed/cancelled
+            #if os(iOS)
+            if !transfer.isInProgress {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            #else
+            // shown on hover for completed/failed/cancelled
             if !transfer.isInProgress && isHovering {
                 Button(action: onRemove) {
                     Image(systemName: "xmark.circle.fill")
@@ -190,13 +207,16 @@ struct TransferItemView: View {
                 }
                 .buttonStyle(.plain)
             }
+            #endif
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+        #if os(macOS)
         .background(isHovering ? Color.primary.opacity(0.04) : .clear)
         .onHover { hovering in
             isHovering = hovering
         }
+        #endif
     }
 
     @ViewBuilder
@@ -250,7 +270,9 @@ struct TransferItemView: View {
 struct TransfersToolbarButton: View {
     @Bindable var viewModel: FileBrowserViewModel
 
+    #if os(macOS)
     @State private var isHovering = false
+    #endif
 
     var body: some View {
         Button {
@@ -261,10 +283,12 @@ struct TransfersToolbarButton: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(viewModel.hasActiveTransfers ? .blue : .primary)
                     .frame(width: 28, height: 28)
+                    #if os(macOS)
                     .background {
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .fill(isHovering ? Color.primary.opacity(0.06) : .clear)
                     }
+                    #endif
                     .symbolEffect(.pulse, options: .repeating, isActive: viewModel.hasActiveTransfers)
 
                 // Badge for active transfer count
@@ -280,6 +304,12 @@ struct TransfersToolbarButton: View {
             }
         }
         .buttonStyle(.plain)
+        #if os(iOS)
+        .sheet(isPresented: $viewModel.isShowingTransfersPopover) {
+            TransfersPopover(viewModel: viewModel)
+                .presentationDetents([.medium, .large])
+        }
+        #else
         .onHover { hovering in
             isHovering = hovering
         }
@@ -287,6 +317,7 @@ struct TransfersToolbarButton: View {
             TransfersPopover(viewModel: viewModel)
         }
         .help("Transfers")
+        #endif
     }
 }
 
