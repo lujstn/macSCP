@@ -264,7 +264,11 @@ struct FileBrowserView: View {
                     .shadow(color: viewModel.isConnected ? .green.opacity(0.5) : .red.opacity(0.5), radius: 2)
 
                 Text(viewModel.isConnected ? viewModel.connection.connectionString : "Disconnected")
+                    #if os(iOS)
+                    .font(.caption.weight(.medium))
+                    #else
                     .font(.system(size: 11, weight: .medium))
+                    #endif
                     .foregroundStyle(.secondary)
             }
 
@@ -285,12 +289,20 @@ struct FileBrowserView: View {
             // File count
             HStack(spacing: 8) {
                 Text("\(viewModel.sortedFiles.count) items")
+                    #if os(iOS)
+                    .font(.caption)
+                    #else
                     .font(.system(size: 11))
+                    #endif
                     .foregroundStyle(.secondary)
 
                 if !viewModel.selectedFiles.isEmpty {
                     Text("\(viewModel.selectedFiles.count) selected")
+                        #if os(iOS)
+                        .font(.caption.weight(.medium))
+                        #else
                         .font(.system(size: 11, weight: .medium))
+                        #endif
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
@@ -417,11 +429,19 @@ struct ClipboardStatusView: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "doc.on.clipboard.fill")
+                #if os(iOS)
+                .font(.caption2.weight(.medium))
+                #else
                 .font(.system(size: 10, weight: .medium))
+                #endif
                 .foregroundStyle(.blue)
 
             Text(displayText)
+                #if os(iOS)
+                .font(.caption.weight(.medium))
+                #else
                 .font(.system(size: 11, weight: .medium))
+                #endif
                 .foregroundStyle(.primary)
         }
         .padding(.horizontal, 10)
@@ -448,13 +468,21 @@ struct ActiveTransfersIndicator: View {
             HStack(spacing: 8) {
                 // Upload icon with animation
                 Image(systemName: "arrow.up.circle.fill")
+                    #if os(iOS)
+                    .font(.footnote.weight(.medium))
+                    #else
                     .font(.system(size: 12, weight: .medium))
+                    #endif
                     .foregroundStyle(.blue)
                     .symbolEffect(.pulse, options: .repeating)
 
                 // Transfer count and overall progress
                 Text("Uploading \(viewModel.activeTransferCount) file\(viewModel.activeTransferCount == 1 ? "" : "s")")
+                    #if os(iOS)
+                    .font(.caption.weight(.medium))
+                    #else
                     .font(.system(size: 11, weight: .medium))
+                    #endif
 
                 // Overall progress bar
                 ProgressView(value: viewModel.overallProgress)
@@ -463,7 +491,11 @@ struct ActiveTransfersIndicator: View {
 
                 // Percentage
                 Text("\(Int(viewModel.overallProgress * 100))%")
+                    #if os(iOS)
+                    .font(.caption2.weight(.semibold).monospaced())
+                    #else
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    #endif
                     .foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
             }

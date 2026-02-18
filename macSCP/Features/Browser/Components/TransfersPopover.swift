@@ -33,7 +33,11 @@ struct TransfersPopover: View {
     private var header: some View {
         HStack {
             Text("Transfers")
+                #if os(iOS)
+                .font(.subheadline.weight(.semibold))
+                #else
                 .font(.system(size: 13, weight: .semibold))
+                #endif
 
             Spacer()
 
@@ -44,10 +48,11 @@ struct TransfersPopover: View {
                 }
                 #if os(iOS)
                 .buttonStyle(.borderless)
+                .font(.footnote)
                 #else
                 .buttonStyle(.plain)
-                #endif
                 .font(.system(size: 12))
+                #endif
                 .foregroundStyle(.red)
             }
 
@@ -58,10 +63,11 @@ struct TransfersPopover: View {
                 }
                 #if os(iOS)
                 .buttonStyle(.borderless)
+                .font(.footnote)
                 #else
                 .buttonStyle(.plain)
-                #endif
                 .font(.system(size: 12))
+                #endif
                 .foregroundStyle(.secondary)
             }
         }
@@ -72,11 +78,19 @@ struct TransfersPopover: View {
     private var emptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "arrow.up.arrow.down.circle")
+                #if os(iOS)
+                .font(.title.weight(.light))
+                #else
                 .font(.system(size: 32, weight: .light))
+                #endif
                 .foregroundStyle(.tertiary)
 
             Text("No transfers")
+                #if os(iOS)
+                .font(.footnote)
+                #else
                 .font(.system(size: 12))
+                #endif
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -127,7 +141,11 @@ struct TransferItemView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(transfer.fileName)
+                        #if os(iOS)
+                        .font(.footnote.weight(.medium))
+                        #else
                         .font(.system(size: 12, weight: .medium))
+                        #endif
                         .lineLimit(1)
                         .truncationMode(.middle)
 
@@ -135,15 +153,27 @@ struct TransferItemView: View {
 
                     if transfer.isComplete {
                         Image(systemName: "checkmark.circle.fill")
+                            #if os(iOS)
+                            .font(.footnote)
+                            #else
                             .font(.system(size: 12))
+                            #endif
                             .foregroundStyle(.green)
                     } else if transfer.status == .failed {
                         Image(systemName: "exclamationmark.circle.fill")
+                            #if os(iOS)
+                            .font(.footnote)
+                            #else
                             .font(.system(size: 12))
+                            #endif
                             .foregroundStyle(.red)
                     } else if transfer.status == .cancelled {
                         Image(systemName: "slash.circle.fill")
+                            #if os(iOS)
+                            .font(.footnote)
+                            #else
                             .font(.system(size: 12))
+                            #endif
                             .foregroundStyle(.orange)
                     }
                 }
@@ -157,27 +187,47 @@ struct TransferItemView: View {
                     // Progress text
                     HStack {
                         Text(transfer.progressText)
+                            #if os(iOS)
+                            .font(.caption2)
+                            #else
                             .font(.system(size: 10))
+                            #endif
                             .foregroundStyle(.secondary)
 
                         Spacer()
 
                         Text("\(transfer.percentCompleted)%")
+                            #if os(iOS)
+                            .font(.caption2.weight(.medium).monospaced())
+                            #else
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            #endif
                             .foregroundStyle(.secondary)
                     }
                 } else if transfer.isComplete {
                     Text(transfer.totalSizeText)
+                        #if os(iOS)
+                        .font(.caption2)
+                        #else
                         .font(.system(size: 10))
+                        #endif
                         .foregroundStyle(.secondary)
                 } else if transfer.status == .failed {
                     Text(transfer.error ?? "Upload failed")
+                        #if os(iOS)
+                        .font(.caption2)
+                        #else
                         .font(.system(size: 10))
+                        #endif
                         .foregroundStyle(.red)
                         .lineLimit(1)
                 } else if transfer.status == .cancelled {
                     Text("Cancelled")
+                        #if os(iOS)
+                        .font(.caption2)
+                        #else
                         .font(.system(size: 10))
+                        #endif
                         .foregroundStyle(.orange)
                 }
             }
@@ -186,7 +236,11 @@ struct TransferItemView: View {
             if transfer.isInProgress {
                 Button(action: onCancel) {
                     Image(systemName: "xmark.circle.fill")
+                        #if os(iOS)
+                        .font(.body)
+                        #else
                         .font(.system(size: 16))
+                        #endif
                         .foregroundStyle(.secondary)
                 }
                 #if os(iOS)
@@ -202,7 +256,7 @@ struct TransferItemView: View {
             if !transfer.isInProgress {
                 Button(action: onRemove) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(.callout)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.borderless)
@@ -238,23 +292,43 @@ struct TransferItemView: View {
             if transfer.isInProgress {
                 // Animated upload icon
                 Image(systemName: "arrow.up")
+                    #if os(iOS)
+                    .font(.footnote.weight(.semibold))
+                    #else
                     .font(.system(size: 12, weight: .semibold))
+                    #endif
                     .foregroundStyle(.white)
             } else if transfer.isComplete {
                 Image(systemName: "checkmark")
+                    #if os(iOS)
+                    .font(.footnote.weight(.semibold))
+                    #else
                     .font(.system(size: 12, weight: .semibold))
+                    #endif
                     .foregroundStyle(.white)
             } else if transfer.status == .failed {
                 Image(systemName: "exclamationmark")
+                    #if os(iOS)
+                    .font(.footnote.weight(.semibold))
+                    #else
                     .font(.system(size: 12, weight: .semibold))
+                    #endif
                     .foregroundStyle(.white)
             } else if transfer.status == .cancelled {
                 Image(systemName: "stop.fill")
+                    #if os(iOS)
+                    .font(.caption2.weight(.semibold))
+                    #else
                     .font(.system(size: 10, weight: .semibold))
+                    #endif
                     .foregroundStyle(.white)
             } else {
                 Image(systemName: "clock")
+                    #if os(iOS)
+                    .font(.footnote.weight(.semibold))
+                    #else
                     .font(.system(size: 12, weight: .semibold))
+                    #endif
                     .foregroundStyle(.white)
             }
         }
@@ -290,7 +364,11 @@ struct TransfersToolbarButton: View {
         } label: {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: viewModel.hasActiveTransfers ? "arrow.up.circle.fill" : "arrow.up.arrow.down.circle")
+                    #if os(iOS)
+                    .font(.callout.weight(.medium))
+                    #else
                     .font(.system(size: 14, weight: .medium))
+                    #endif
                     .foregroundStyle(viewModel.hasActiveTransfers ? .blue : .primary)
                     .frame(width: 28, height: 28)
                     #if os(macOS)
@@ -304,7 +382,11 @@ struct TransfersToolbarButton: View {
                 // Badge for active transfer count
                 if viewModel.activeTransferCount > 0 {
                     Text("\(viewModel.activeTransferCount)")
+                        #if os(iOS)
+                        .font(.caption2.bold())
+                        #else
                         .font(.system(size: 9, weight: .bold))
+                        #endif
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)

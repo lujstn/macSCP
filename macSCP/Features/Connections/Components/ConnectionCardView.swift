@@ -57,18 +57,18 @@ struct ConnectionCardView: View {
                         .frame(width: 42, height: 42)
 
                     Image(systemName: connection.iconName)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.headline.weight(.medium))
                         .foregroundStyle(.blue)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(connection.name)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     Text(connection.connectionString)
-                        .font(.system(size: 11, weight: .regular, design: .monospaced))
+                        .font(.caption.monospaced())
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -79,7 +79,7 @@ struct ConnectionCardView: View {
             // Description
             if let description = connection.description, !description.isEmpty {
                 Text(description)
-                    .font(.system(size: 12))
+                    .font(.footnote)
                     .foregroundStyle(.tertiary)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -92,7 +92,7 @@ struct ConnectionCardView: View {
                 if !connection.tags.isEmpty {
                     ForEach(connection.tags.prefix(2), id: \.self) { tag in
                         Text(tag)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -100,7 +100,7 @@ struct ConnectionCardView: View {
                     }
                     if connection.tags.count > 2 {
                         Text("+\(connection.tags.count - 2)")
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -111,7 +111,7 @@ struct ConnectionCardView: View {
                 HStack(spacing: 8) {
                     Button(action: onConnect) {
                         Image(systemName: "folder.fill")
-                            .font(.system(size: 14))
+                            .font(.callout)
                             .foregroundStyle(.primary.opacity(0.8))
                             .frame(width: 30, height: 30)
                             .background(.primary.opacity(0.1), in: Circle())
@@ -121,7 +121,7 @@ struct ConnectionCardView: View {
                     if connection.connectionType == .sftp {
                         Button(action: onOpenTerminal) {
                             Image(systemName: "terminal.fill")
-                                .font(.system(size: 14))
+                                .font(.callout)
                                 .foregroundStyle(.primary.opacity(0.8))
                                 .frame(width: 30, height: 30)
                                 .background(.primary.opacity(0.1), in: Circle())

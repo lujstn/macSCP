@@ -31,25 +31,41 @@ struct ErrorView: View {
                     .frame(width: 80, height: 80)
 
                 Image(systemName: "exclamationmark.triangle.fill")
+                    #if os(iOS)
+                    .font(.title.weight(.medium))
+                    #else
                     .font(.system(size: 32, weight: .medium))
+                    #endif
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.red)
             }
 
             VStack(spacing: 8) {
                 Text("Something Went Wrong")
+                    #if os(iOS)
+                    .font(.headline)
+                    #else
                     .font(.system(size: 17, weight: .semibold))
+                    #endif
                     .foregroundStyle(.primary)
 
                 Text(error.localizedDescription)
+                    #if os(iOS)
+                    .font(.subheadline)
+                    #else
                     .font(.system(size: 13))
+                    #endif
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
 
                 if let suggestion = error.recoverySuggestion {
                     Text(suggestion)
+                        #if os(iOS)
+                        .font(.footnote)
+                        #else
                         .font(.system(size: 12))
+                        #endif
                         .foregroundStyle(.tertiary)
                         .multilineTextAlignment(.center)
                         .padding(.top, 4)
@@ -61,7 +77,11 @@ struct ErrorView: View {
                     retryAction()
                 } label: {
                     Label("Try Again", systemImage: "arrow.clockwise")
+                        #if os(iOS)
+                        .font(.subheadline.weight(.medium))
+                        #else
                         .font(.system(size: 13, weight: .medium))
+                        #endif
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.regular)
@@ -87,11 +107,19 @@ struct CompactErrorView: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.circle.fill")
+                #if os(iOS)
+                .font(.callout.weight(.medium))
+                #else
                 .font(.system(size: 14, weight: .medium))
+                #endif
                 .foregroundStyle(.red)
 
             Text(message)
+                #if os(iOS)
+                .font(.footnote)
+                #else
                 .font(.system(size: 12))
+                #endif
                 .foregroundStyle(.primary)
 
             Spacer()
@@ -101,7 +129,11 @@ struct CompactErrorView: View {
                     dismissAction()
                 } label: {
                     Image(systemName: "xmark")
+                        #if os(iOS)
+                        .font(.caption2.bold())
+                        #else
                         .font(.system(size: 10, weight: .bold))
+                        #endif
                         .foregroundStyle(.secondary)
                         .frame(width: 20, height: 20)
                         .background {
@@ -145,11 +177,19 @@ struct ErrorBannerView: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
+                #if os(iOS)
+                .font(.body)
+                #else
                 .font(.system(size: 16))
+                #endif
                 .foregroundStyle(.white)
 
             Text(message)
+                #if os(iOS)
+                .font(.subheadline.weight(.medium))
+                #else
                 .font(.system(size: 13, weight: .medium))
+                #endif
                 .foregroundStyle(.white)
 
             Spacer()
@@ -159,7 +199,11 @@ struct ErrorBannerView: View {
                     dismissAction()
                 } label: {
                     Image(systemName: "xmark")
+                        #if os(iOS)
+                        .font(.footnote.bold())
+                        #else
                         .font(.system(size: 12, weight: .bold))
+                        #endif
                         .foregroundStyle(.white.opacity(0.8))
                 }
                 #if os(iOS)

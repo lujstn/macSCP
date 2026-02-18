@@ -110,22 +110,38 @@ struct SidebarView: View {
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "ladybug.fill")
+                        #if os(iOS)
+                        .font(.headline)
+                        #else
                         .font(.system(size: 17))
+                        #endif
                         .foregroundStyle(.orange)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Found a bug?")
+                            #if os(iOS)
+                            .font(.callout.weight(.medium))
+                            #else
                             .font(.system(size: 14, weight: .medium))
+                            #endif
                             .foregroundStyle(.primary)
                         Text("Report it on GitHub")
+                            #if os(iOS)
+                            .font(.subheadline)
+                            #else
                             .font(.system(size: 13))
+                            #endif
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
                     Image(systemName: "arrow.up.right")
+                        #if os(iOS)
+                        .font(.subheadline.weight(.medium))
+                        #else
                         .font(.system(size: 13, weight: .medium))
+                        #endif
                         .foregroundStyle(.tertiary)
                 }
                 .padding(10)

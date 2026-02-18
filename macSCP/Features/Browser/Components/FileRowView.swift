@@ -16,14 +16,22 @@ struct FileRowView: View {
         HStack(spacing: 10) {
             // Icon
             Image(systemName: FileTypeService.iconName(for: file))
+                #if os(iOS)
+                .font(.title3)
+                #else
                 .font(.system(size: 20))
+                #endif
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(FileTypeService.iconColor(for: file))
                 .frame(width: 24)
 
             // Name
             Text(file.name)
+                #if os(iOS)
+                .font(.subheadline)
+                #else
                 .font(.system(size: 13))
+                #endif
                 .foregroundStyle(.primary)
                 .lineLimit(1)
 
@@ -32,12 +40,12 @@ struct FileRowView: View {
             #if os(iOS)
             // Size — flexible width on iOS
             Text(file.displaySize)
-                .font(.system(size: 12))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
 
             // Date — flexible width on iOS
             Text(file.modificationDate?.fileListDisplayString ?? "—")
-                .font(.system(size: 12))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
             #else
             // Size
