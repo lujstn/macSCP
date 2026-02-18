@@ -15,6 +15,63 @@ struct FileEditorView: View {
     }
 
     var body: some View {
+        #if os(iOS)
+        NavigationStack {
+            VStack(spacing: 0) {
+                if viewModel.isShowingSearch {
+                    SearchReplaceBar(viewModel: viewModel)
+                }
+
+                EditorContentView(viewModel: viewModel)
+            }
+            .navigationTitle(viewModel.fileName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        viewModel.toggleSearch()
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .keyboardShortcut("f", modifiers: .command)
+
+                    Button {
+                        Task { await viewModel.reload() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+
+                    Button {
+                        viewModel.revertChanges()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!viewModel.hasChanges)
+
+                    Button {
+                        Task { await viewModel.save() }
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .keyboardShortcut("s", modifiers: .command)
+                    .disabled(!viewModel.hasChanges)
+                }
+
+                ToolbarItem(placement: .status) {
+                    if viewModel.hasChanges {
+                        Circle()
+                            .fill(.orange)
+                            .frame(width: 8, height: 8)
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                EditorStatusBar(viewModel: viewModel)
+                    .background(.bar)
+            }
+        }
+        .errorAlert($viewModel.error)
+        #else
         VStack(spacing: 0) {
             // Header
             EditorHeaderView(viewModel: viewModel)
@@ -57,6 +114,7 @@ struct FileEditorView: View {
                 .disabled(!viewModel.hasChanges)
             }
         }
+        #endif
     }
 }
 
