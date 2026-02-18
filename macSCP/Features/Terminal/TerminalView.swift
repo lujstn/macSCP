@@ -19,18 +19,22 @@ struct TerminalContentView: View {
     @Bindable var viewModel: TerminalViewModel
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Toolbar
-            terminalToolbar
-
-            Divider()
-
-            // Terminal content
+        #if os(iOS)
+        NavigationStack {
             terminalContent
+                .navigationTitle(statusText)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .status) {
+                        Circle()
+                            .fill(statusColor)
+                            .frame(width: 8, height: 8)
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        reconnectButton
+                    }
+                }
         }
-        #if os(macOS)
-        .frame(minWidth: WindowSize.minTerminal.width, minHeight: WindowSize.minTerminal.height)
-        #endif
         .task {
             await viewModel.connect()
         }
@@ -40,8 +44,43 @@ struct TerminalContentView: View {
             }
         }
         .errorAlert($viewModel.error)
+        #else
+        VStack(spacing: 0) {
+            // Toolbar
+            terminalToolbar
+
+            Divider()
+
+            // Terminal content
+            terminalContent
+        }
+        .frame(minWidth: WindowSize.minTerminal.width, minHeight: WindowSize.minTerminal.height)
+        .task {
+            await viewModel.connect()
+        }
+        .onDisappear {
+            Task {
+                await viewModel.cleanup()
+            }
+        }
+        .errorAlert($viewModel.error)
+        #endif
     }
 
+    private var reconnectButton: some View {
+        Button {
+            Task {
+                await viewModel.reconnect()
+            }
+        } label: {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+        }
+        .disabled(viewModel.state == .connecting)
+    }
+
+    #if os(macOS)
     @ViewBuilder
     private var terminalToolbar: some View {
         HStack(spacing: 8) {
@@ -53,18 +92,9 @@ struct TerminalContentView: View {
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Button {
-                Task {
-                    await viewModel.reconnect()
-                }
-            } label: {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.state == .connecting)
-            .help("Reconnect")
+            reconnectButton
+                .buttonStyle(.plain)
+                .help("Reconnect")
 
             Spacer()
         }
@@ -72,6 +102,7 @@ struct TerminalContentView: View {
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
     }
+    #endif
 
     @ViewBuilder
     private var terminalContent: some View {
