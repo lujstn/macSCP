@@ -187,6 +187,12 @@ struct SwiftTermView: NSViewRepresentable {
             }
         }
 
+        func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String: String]) {
+            if let url = URL(string: link) {
+                NSWorkspace.shared.open(url)
+            }
+        }
+
         func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
     }
 }
@@ -249,6 +255,12 @@ struct SwiftTermView: UIViewRepresentable {
         func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {
             if let string = String(data: content, encoding: .utf8) {
                 UIPasteboard.general.string = string
+            }
+        }
+
+        func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String: String]) {
+            if let url = URL(string: link) {
+                UIApplication.shared.open(url)
             }
         }
 
