@@ -44,6 +44,8 @@ struct SidebarView: View {
                         Image(systemName: "server.rack")
                             #if os(macOS)
                             .foregroundStyle(Color(red: 0, green: 122/255.0, blue: 1))
+                            #else
+                            .imageScale(.small)
                             #endif
                     }
                 }
@@ -87,13 +89,14 @@ struct SidebarView: View {
                         viewModel.isShowingNewFolderSheet = true
                     } label: {
                         Label("New Folder", systemImage: "folder.badge.plus")
+                            #if os(iOS)
+                            .foregroundStyle(.primary.opacity(0.55))
+                            .imageScale(.small)
+                            #else
                             .foregroundStyle(.secondary)
+                            #endif
                     }
-                    #if os(iOS)
-                    .buttonStyle(.borderless)
-                    #else
                     .buttonStyle(.plain)
-                    #endif
                 }
                 #if os(iOS)
                 .headerProminence(.increased)
@@ -150,10 +153,9 @@ struct SidebarView: View {
                         .fill(Color.primary.opacity(0.05))
                 )
             }
-            #if os(iOS)
-            .buttonStyle(.borderless)
-            #else
             .buttonStyle(.plain)
+            #if os(iOS)
+            .hoverEffect(.lift)
             #endif
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -196,6 +198,9 @@ struct FolderRowView: View {
         } icon: {
             Image(systemName: "folder.fill")
                 .foregroundStyle(.cyan)
+                #if os(iOS)
+                .imageScale(.small)
+                #endif
         }
         .contextMenu {
             Button {

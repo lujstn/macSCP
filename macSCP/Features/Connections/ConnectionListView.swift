@@ -18,7 +18,11 @@ struct ConnectionListView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             SidebarView(viewModel: viewModel)
+                #if os(iOS)
+                .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
+                #else
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 300)
+                #endif
         } detail: {
             ConnectionGridView(viewModel: viewModel)
         }
@@ -48,7 +52,11 @@ struct ConnectionListView: View {
                 }
             }
         }
+        #if os(iOS)
+        .searchable(text: $viewModel.searchText, placement: .sidebar, prompt: "Search connections")
+        #else
         .searchable(text: $viewModel.searchText, prompt: "Search connections")
+        #endif
         .task {
             await viewModel.loadData()
         }

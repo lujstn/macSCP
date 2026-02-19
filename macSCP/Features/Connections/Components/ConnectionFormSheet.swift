@@ -35,6 +35,7 @@ struct ConnectionFormSheet: View {
 
     // Wizard state
     @State private var currentStep: FormStep = .selectType
+    @State private var showDetailsStep = false
     @State private var selectedType: ConnectionType = .sftp
     @State private var hasSelectedType: Bool = false
 
@@ -96,41 +97,57 @@ struct ConnectionFormSheet: View {
     #if os(iOS)
     private var iOSBody: some View {
         NavigationStack {
-            Group {
-                if isEditMode {
-                    iOSDetailsForm
-                } else {
-                    switch currentStep {
-                    case .selectType:
-                        iOSTypeSelection
-                    case .fillDetails:
+            if isEditMode {
+                iOSDetailsForm
+                    .navigationTitle("Edit Connection")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button { onCancel() } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(mode.saveButtonTitle) { save() }
+                                .fontWeight(.semibold)
+                                .disabled(!isValid)
+                                .padding(.horizontal, 4)
+                        }
+                    }
+            } else {
+                iOSTypeSelection
+                    .navigationTitle("Choose Connection Type")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button { onCancel() } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Continue") { showDetailsStep = true }
+                                .disabled(!hasSelectedType)
+                                .padding(.horizontal, 4)
+                        }
+                    }
+                    .navigationDestination(isPresented: $showDetailsStep) {
                         iOSDetailsForm
+                            .navigationTitle("Configure \(selectedType.displayName)")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .confirmationAction) {
+                                    Button(mode.saveButtonTitle) { save() }
+                                        .fontWeight(.semibold)
+                                        .disabled(!isValid)
+                                        .padding(.horizontal, 4)
+                                }
+                            }
                     }
-                }
-            }
-            .navigationTitle(headerTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(currentStep == .fillDetails && !isEditMode ? "Back" : "Cancel") {
-                        if currentStep == .fillDetails && !isEditMode {
-                            currentStep = .selectType
-                        } else {
-                            onCancel()
+                    .onChange(of: showDetailsStep) { _, isShowing in
+                        if !isShowing {
+                            hasSelectedType = false
                         }
                     }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(currentStep == .selectType && !isEditMode ? "Continue" : mode.saveButtonTitle) {
-                        if currentStep == .selectType && !isEditMode {
-                            currentStep = .fillDetails
-                        } else {
-                            save()
-                        }
-                    }
-                    .fontWeight(currentStep == .fillDetails || isEditMode ? .semibold : nil)
-                    .disabled(currentStep == .selectType && !isEditMode ? !hasSelectedType : !isValid)
-                }
             }
         }
         .onAppear { loadExistingData() }
@@ -181,6 +198,7 @@ struct ConnectionFormSheet: View {
         Form {
             connectionFormSections
         }
+        .transaction { $0.animation = nil }
     }
     #endif
 
@@ -233,19 +251,28 @@ struct ConnectionFormSheet: View {
         // Connection details based on type
         Section("Connection") {
             TextField("Name", text: $name)
+                .stableFormRow()
 
             if selectedType == .sftp {
                 TextField("Host", text: $host)
+                    .stableFormRow()
                 TextField("Port", text: $port)
+                    .stableFormRow()
                 TextField("Username", text: $username)
+                    .stableFormRow()
             } else if selectedType == .s3 {
                 TextField("Access Key ID", text: $username)
+                    .stableFormRow()
                 SecureField("Secret Access Key", text: $s3SecretAccessKey)
+                    .stableFormRow()
                 TextField("Bucket", text: $s3Bucket)
+                    .stableFormRow()
                 TextField("Region", text: $s3Region)
                     .textContentType(.none)
+                    .stableFormRow()
                 TextField("Custom Endpoint (optional)", text: $s3Endpoint)
                     .textContentType(.URL)
+                    .stableFormRow()
             }
         }
 
@@ -260,10 +287,12 @@ struct ConnectionFormSheet: View {
 
                 if authMethod == .password {
                     SecureField("Password", text: $password)
+                        .stableFormRow()
                     Toggle("Save password in Keychain", isOn: $savePassword)
                 } else {
                     HStack {
                         TextField("Private Key Path", text: $privateKeyPath)
+                            .stableFormRow()
                         #if os(macOS)
                         Button("Browse") {
                             browseForKey()
@@ -292,6 +321,7 @@ struct ConnectionFormSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         TextField("", text: $newTag)
+                            .stableFormRow()
                             .onSubmit {
                                 addTag()
                             }
@@ -674,6 +704,7 @@ struct ConnectionTypeCard: View {
         }
         #if os(iOS)
         .buttonStyle(.borderless)
+        .hoverEffect(.lift)
         #else
         .buttonStyle(.plain)
         #endif

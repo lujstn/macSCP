@@ -117,6 +117,7 @@ struct ConnectionCardView: View {
                             .background(.primary.opacity(0.1), in: Circle())
                     }
                     .buttonStyle(.borderless)
+                    .hoverEffect(.lift)
 
                     if connection.connectionType == .sftp {
                         Button(action: onOpenTerminal) {
@@ -127,6 +128,7 @@ struct ConnectionCardView: View {
                                 .background(.primary.opacity(0.1), in: Circle())
                         }
                         .buttonStyle(.borderless)
+                        .hoverEffect(.lift)
                     }
                 }
             }
@@ -140,6 +142,7 @@ struct ConnectionCardView: View {
             }
         }
         .contentShape(Rectangle())
+        .hoverEffect(.lift)
         .onTapGesture { onConnect() }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
         .contextMenu {

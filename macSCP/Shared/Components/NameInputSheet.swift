@@ -37,6 +37,43 @@ struct NameInputSheet: View {
     }
 
     var body: some View {
+        #if os(iOS)
+        NavigationStack {
+            Form {
+                Section {
+                    TextField(placeholder, text: $name)
+                        .focused($isFocused)
+                        .onSubmit {
+                            if isValid { onConfirm(name.trimmed) }
+                        }
+                } header: {
+                    if !message.isEmpty {
+                        Text(message)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                            .textCase(nil)
+                    }
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { onCancel() } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(confirmButtonTitle) { onConfirm(name.trimmed) }
+                        .fontWeight(.semibold)
+                        .disabled(!isValid)
+                        .padding(.horizontal, 4)
+                }
+            }
+        }
+        .presentationDetents([.height(220)])
+        .onAppear { isFocused = true }
+        #else
         VStack(alignment: .leading, spacing: UIConstants.spacing) {
             Text(title)
                 .font(.headline)
@@ -76,6 +113,7 @@ struct NameInputSheet: View {
         .onAppear {
             isFocused = true
         }
+        #endif
     }
 
     private var isValid: Bool {
