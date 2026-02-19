@@ -29,6 +29,20 @@ struct EmptyStateView: View {
     }
 
     var body: some View {
+        #if os(iOS)
+        if let actionTitle = actionTitle, let action = action {
+            ContentUnavailableView {
+                Label(title, systemImage: icon)
+            } description: {
+                Text(message)
+            } actions: {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.borderedProminent)
+            }
+        } else {
+            ContentUnavailableView(title, systemImage: icon, description: Text(message))
+        }
+        #else
         VStack(spacing: 20) {
             // Icon with gradient background
             ZStack {
@@ -43,30 +57,18 @@ struct EmptyStateView: View {
                     .frame(width: 80, height: 80)
 
                 Image(systemName: icon)
-                    #if os(iOS)
-                    .font(.title.weight(.medium))
-                    #else
                     .font(.system(size: 32, weight: .medium))
-                    #endif
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.blue)
             }
 
             VStack(spacing: 8) {
                 Text(title)
-                    #if os(iOS)
-                    .font(.headline)
-                    #else
                     .font(.system(size: 17, weight: .semibold))
-                    #endif
                     .foregroundStyle(.primary)
 
                 Text(message)
-                    #if os(iOS)
-                    .font(.subheadline)
-                    #else
                     .font(.system(size: 13))
-                    #endif
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -77,11 +79,7 @@ struct EmptyStateView: View {
                     action()
                 } label: {
                     Text(actionTitle)
-                        #if os(iOS)
-                        .font(.subheadline.weight(.medium))
-                        #else
                         .font(.system(size: 13, weight: .medium))
-                        #endif
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.regular)
@@ -89,6 +87,7 @@ struct EmptyStateView: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        #endif
     }
 }
 
