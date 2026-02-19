@@ -74,7 +74,11 @@ struct TerminalContentView: View {
             }
         } label: {
             Image(systemName: "arrow.clockwise")
+                #if os(iOS)
+                .font(.caption.weight(.medium))
+                #else
                 .font(.system(size: 11, weight: .medium))
+                #endif
                 .foregroundStyle(.secondary)
         }
         .disabled(viewModel.state == .connecting)

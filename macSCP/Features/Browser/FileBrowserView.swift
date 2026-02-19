@@ -522,7 +522,11 @@ struct ActiveTransfersIndicator: View {
                     }
             }
         }
+        #if os(iOS)
+        .buttonStyle(.borderless)
+        #else
         .buttonStyle(.plain)
+        #endif
     }
 }
 

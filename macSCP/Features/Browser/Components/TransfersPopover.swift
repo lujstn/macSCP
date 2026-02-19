@@ -395,7 +395,11 @@ struct TransfersToolbarButton: View {
                 }
             }
         }
+        #if os(iOS)
+        .buttonStyle(.borderless)
+        #else
         .buttonStyle(.plain)
+        #endif
         #if os(iOS)
         .sheet(isPresented: $viewModel.isShowingTransfersPopover) {
             TransfersPopover(viewModel: viewModel)

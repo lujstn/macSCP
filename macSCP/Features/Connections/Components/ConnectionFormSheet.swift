@@ -617,7 +617,9 @@ struct ConnectionTypeCard: View {
     let isSelected: Bool
     let onSelect: () -> Void
 
+    #if os(macOS)
     @State private var isHovering = false
+    #endif
 
     var body: some View {
         Button(action: onSelect) {
@@ -656,7 +658,11 @@ struct ConnectionTypeCard: View {
             .padding(.horizontal, 16)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    #if os(macOS)
                     .fill(isSelected ? Color.blue.opacity(0.08) : (isHovering ? Color.primary.opacity(0.04) : Color.clear))
+                    #else
+                    .fill(isSelected ? Color.blue.opacity(0.08) : Color.clear)
+                    #endif
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -666,12 +672,18 @@ struct ConnectionTypeCard: View {
                     )
             )
         }
+        #if os(iOS)
+        .buttonStyle(.borderless)
+        #else
         .buttonStyle(.plain)
+        #endif
         .contentShape(RoundedRectangle(cornerRadius: 12))
+        #if os(macOS)
         .onHover { hovering in
             isHovering = hovering
         }
         .animation(.easeInOut(duration: 0.1), value: isHovering)
+        #endif
         .animation(.easeInOut(duration: 0.15), value: isSelected)
     }
 }
@@ -711,7 +723,11 @@ struct IconPickerRow: View {
                 .background(.quaternary.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
+            #if os(iOS)
+            .buttonStyle(.borderless)
+            #else
             .buttonStyle(.plain)
+            #endif
             .popover(isPresented: $showingIconSelector, arrowEdge: .trailing) {
                 IconSelectorView(selectedIcon: $selectedIcon)
             }
@@ -724,7 +740,9 @@ struct TagChip: View {
     let tag: String
     let onRemove: () -> Void
 
+    #if os(macOS)
     @State private var isHovering = false
+    #endif
 
     var body: some View {
         HStack(spacing: 4) {
@@ -736,7 +754,11 @@ struct TagChip: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 8, weight: .bold))
+                    #if os(macOS)
                     .foregroundStyle(isHovering ? .red : .secondary)
+                    #else
+                    .foregroundStyle(.secondary)
+                    #endif
             }
             #if os(iOS)
             .buttonStyle(.borderless)
@@ -755,9 +777,11 @@ struct TagChip: View {
             Capsule()
                 .strokeBorder(.blue.opacity(0.2), lineWidth: 1)
         }
+        #if os(macOS)
         .onHover { hovering in
             isHovering = hovering
         }
+        #endif
     }
 }
 

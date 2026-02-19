@@ -76,7 +76,7 @@ struct FileRowView: View {
         Button(action: onDoubleClick) {
             rowContent
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .contentShape(Rectangle())
 #else
         rowContent

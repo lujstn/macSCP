@@ -183,7 +183,11 @@ private struct IconCell: View {
                         #endif
                 }
         }
+        #if os(iOS)
+        .buttonStyle(.borderless)
+        #else
         .buttonStyle(.plain)
+        #endif
         .contentShape(Rectangle())
         #if os(macOS)
         .onHover { hovering in
