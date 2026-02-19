@@ -306,7 +306,11 @@ struct FileBrowserView: View {
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
+                        #if os(iOS)
+                        .background(Color.accentColor.opacity(0.1), in: Capsule())
+                        #else
                         .background(.blue.opacity(0.1), in: Capsule())
+                        #endif
                 }
             }
         }
@@ -448,7 +452,11 @@ struct ClipboardStatusView: View {
         .padding(.vertical, 4)
         .background {
             Capsule()
+                #if os(iOS)
+                .fill(Color.accentColor.opacity(0.1))
+                #else
                 .fill(.blue.opacity(0.1))
+                #endif
                 .overlay {
                     Capsule()
                         .strokeBorder(.blue.opacity(0.2), lineWidth: 1)
@@ -503,7 +511,11 @@ struct ActiveTransfersIndicator: View {
             .padding(.vertical, 6)
             .background {
                 Capsule()
+                    #if os(iOS)
+                    .fill(Color.accentColor.opacity(0.1))
+                    #else
                     .fill(.blue.opacity(0.1))
+                    #endif
                     .overlay {
                         Capsule()
                             .strokeBorder(.blue.opacity(0.3), lineWidth: 1)

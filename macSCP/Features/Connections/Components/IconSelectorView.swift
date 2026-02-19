@@ -88,7 +88,11 @@ struct IconSelectorView: View {
                     .font(.system(size: 20))
                     .foregroundStyle(.blue)
                     .frame(width: 32, height: 32)
+                    #if os(iOS)
+                    .background(Color.accentColor.opacity(0.1))
+                    #else
                     .background(.blue.opacity(0.1))
+                    #endif
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                 Text(selectedIcon)
                     .font(.system(.body, design: .monospaced))

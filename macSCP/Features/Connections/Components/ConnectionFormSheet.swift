@@ -151,7 +151,11 @@ struct ConnectionFormSheet: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
+                        #if os(iOS)
+                        .fill(selectedType == type && hasSelectedType ? Color.accentColor : Color.accentColor.opacity(0.1))
+                        #else
                         .fill(selectedType == type && hasSelectedType ? .blue : .blue.opacity(0.1))
+                        #endif
                         .frame(width: 36, height: 36)
 
                     Image(systemName: type.iconName)
@@ -621,7 +625,11 @@ struct ConnectionTypeCard: View {
                 // Icon
                 ZStack {
                     Circle()
+                        #if os(iOS)
+                        .fill(isSelected ? Color.accentColor : Color.accentColor.opacity(0.1))
+                        #else
                         .fill(isSelected ? .blue : .blue.opacity(0.1))
+                        #endif
                         .frame(width: 56, height: 56)
 
                     Image(systemName: type.iconName)
@@ -685,7 +693,11 @@ struct IconPickerRow: View {
                         .font(.system(size: 16))
                         .foregroundStyle(.blue)
                         .frame(width: 28, height: 28)
+                        #if os(iOS)
+                        .background(Color.accentColor.opacity(0.1))
+                        #else
                         .background(.blue.opacity(0.1))
+                        #endif
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                     Text(selectedIcon)
                         .font(.system(.body, design: .monospaced))
@@ -734,7 +746,11 @@ struct TagChip: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
+        #if os(iOS)
+        .background(Color.accentColor.opacity(0.1), in: Capsule())
+        #else
         .background(.blue.opacity(0.1), in: Capsule())
+        #endif
         .overlay {
             Capsule()
                 .strokeBorder(.blue.opacity(0.2), lineWidth: 1)
